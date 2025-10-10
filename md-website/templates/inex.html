@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Convert your Markdown below</h2>
+
+  <div class="markdow-input-section">
+    <label for="markdown-input">Enter Markdown:</label>
+    <textarea id="markdown-input" rows="10" placeholder="# Hello World\n\n* List item 1\n* List item 2"></textarea>
+    <button onclick="convertMarkdown()">Convert to HTML</button>
+  
+    <h4>HTML Output:</h4>
+    <pre id="html-output">Converted HTML will appear here...</pre>
+  
+    <script>
+      async function convertMarkdown() {
+        const markdownText = document.getElementById('markdown-input').value;
+        const outputPre = document.getElementById('html-output');
+  
+        outputPre.textContent = '...Converting...';
+  
+        try {
+          const response = await fetch('/api/mdconvert', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ markdown: markdownText })
+          });
+  
+          const data = await response.json();
+  
+          if (data.status === 'success') {
+            outputPre.textContent = data.html_content; 
+                          
+          } else {
+            outputPre.textContent = `ERROR: ${data.error}`;
+          }
+  
+        } catch (error) {
+          outputPre.textContent = `A network error occurred: ${error}`;
+        }
+      }
+    </script>
+  </div>
+{% endblock %}

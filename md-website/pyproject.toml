@@ -1,0 +1,13 @@
+[project]
+name = "md-website"
+version = "0.1.0"
+description = "A website that converts markdown to html"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Tony Ebel", email = "tonyebel123@gmail.com" }
+]
+dependencies = [
+    "flask>=3.1.2",
+    "google-cloud-pubsub>=2.31.1",
+]
