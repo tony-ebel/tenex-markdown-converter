@@ -1,5 +1,5 @@
-resource "google_storage_bucket" "mdconverstions" {
-  for_each = local.tenet_envs
+resource "google_storage_bucket" "mdconversions" {
+  for_each = local.tenant_envs
 
   name          = "mdconversions-${each.key}"
   location      = "US"
