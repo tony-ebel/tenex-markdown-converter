@@ -86,10 +86,3 @@ def retrieve_html(filename):
 
     else:
         return jsonify({"error": f"File '{filename}' not found."}), 404
-
-
-if __name__ == '__main__':
-    if not os.path.exists(gcs_mount):
-        logging.error('GCS mount is not present. Refusing to start flask')
-    else:
-        app.run()

@@ -10,6 +10,7 @@ ENV PYTHONUNBUFFERED=1
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
+ENV PORT=8500
 
 
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -25,4 +26,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 USER nonroot
 
-CMD ["python", "app.py"]
+CMD gunicorn -w 8 -b 0.0.0.0:${PORT} app:app

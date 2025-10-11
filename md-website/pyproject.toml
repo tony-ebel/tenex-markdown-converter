@@ -10,4 +10,5 @@ authors = [
 dependencies = [
     "flask>=3.1.2",
     "google-cloud-pubsub>=2.31.1",
+    "gunicorn>=23.0.0",
 ]
