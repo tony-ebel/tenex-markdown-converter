@@ -26,4 +26,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 USER nonroot
 
-CMD gunicorn -w 8 -b 0.0.0.0:${PORT} app:app
+CMD ["gunicorn", "-w", "8", "app:app"]
