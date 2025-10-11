@@ -26,4 +26,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 USER nonroot
 
-CMD ["gunicorn", "-w", "8", "app:app"]
+CMD ["gunicorn", "-c", "gunicorn_config.py", "app:app"]
