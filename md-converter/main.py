@@ -14,7 +14,6 @@ def html_to_gcs(html, message_id, bucket_name):
     blob_name = f'{message_id}.html'
     blob = bucket.blob(blob_name)
 
-    blob.content_type = 'text/html'
     blob.upload_from_string(html)
     print(f'HTML uploaded to gs://{bucket_name}/{blob_name}')
 
