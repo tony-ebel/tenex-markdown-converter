@@ -26,6 +26,11 @@ resource "google_cloud_run_v2_service" "md-website" {
         }
       }
 
+      env {
+        name  = "GCS_MOUNTPOINT"
+        value = var.run_gcs_mountpoint
+      }
+
       volume_mounts {
         name       = "bucket"
         mount_path = var.run_gcs_mountpoint
