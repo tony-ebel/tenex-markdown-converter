@@ -5,7 +5,7 @@ output "run_gcs_mountpoint" {
 
 output "pubsub_topic" {
   description = "PubSub topic name"
-  value       = resource.google_pubsub_topic.mdconversions.name
+  value       = google_pubsub_topic.mdconversions.name
 }
 
 output "run_stage_services" {

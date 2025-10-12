@@ -1,3 +1,29 @@
+# IAM Service Accounts
+resource "google_service_account" "md-website" {
+  for_each = local.tenant_envs
+
+  account_id   = "sa-cloudrun-${each.key}"
+  display_name = "SA for Cloud Run Service: ${each.key}"
+}
+
+resource "google_project_iam_member" "gar_reader" {
+  for_each = local.tenant_envs
+
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:${google_service_account.md-website[each.key].email}"
+}
+
+resource "google_pubsub_topic_iam_member" "pubsub_publisher" {
+  for_each = local.tenant_envs
+
+  topic   = google_pubsub_topic.mdconversions.name
+  role    = "roles/pubsub.publisher"
+  member  = "serviceAccount:${google_service_account.md-website[each.key].email}"
+}
+
+
+# Cloud Run Services
 resource "google_cloud_run_v2_service" "md-website" {
   for_each = local.tenant_envs
 
@@ -8,6 +34,7 @@ resource "google_cloud_run_v2_service" "md-website" {
 
   template {
     execution_environment = "EXECUTION_ENVIRONMENT_GEN2"
+    service_account       = google_service_account.md-website[each.key].email
 
     containers {
       name  = "md-website"
