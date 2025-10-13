@@ -9,9 +9,6 @@ on:
       - .github/workflows/md-website.yml
   workflow_dispatch:
 
-env:
-  IMAGE_NAME: us-central1-docker.pkg.dev/still-tower-474715-c6/markdown-converter/md-website
-
 jobs:
   build-docker-image:
     name: Build md-website Image
@@ -36,14 +33,13 @@ jobs:
       - name: Login to GAR
         uses: docker/login-action@v2
         with:
-          registry: gcr.io
+          registry: us-central1-docker.pkg.dev
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 
       - name: Docker Build & Push
         uses: docker/build-push-action@v4
         with:
-          tags: ${{ env.IMAGE_NAME }}
-          push: false
+          context: ./md-website
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}
           cache-to: type=inline
