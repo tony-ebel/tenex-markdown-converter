@@ -1,0 +1,49 @@
+name: Build md-website Image
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [ opened, closed, synchronize, reopened ]
+    paths:
+      - md-website/
+      - .github/workflows/md-website.yml
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: us-central1-docker.pkg.dev/still-tower-474715-c6/markdown-converter/md-website
+
+jobs:
+  build-docker-image:
+    name: Build md-website Image
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        id: auth
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GAR
+        uses: docker/login-action@v2
+        with:
+          registry: gcr.io
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Docker Build & Push
+        uses: docker/build-push-action@v4
+        with:
+          tags: ${{ env.IMAGE_NAME }}
+          push: false
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}
+          cache-to: type=inline
