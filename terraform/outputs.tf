@@ -10,7 +10,7 @@ output "pubsub_topic" {
 
 output "run_stage_services" {
   description = "Cloud Run Services in stage environment"
-  value       = join(",", [
+  value = join(",", [
     for key, value in local.tenant_envs : key
     if value.env == "stage"
   ])
@@ -18,7 +18,7 @@ output "run_stage_services" {
 
 output "run_prod_services" {
   description = "Cloud Run Services in prod environment"
-  value       = join(",", [
+  value = join(",", [
     for key, value in local.tenant_envs : key
     if value.env == "prod"
   ])

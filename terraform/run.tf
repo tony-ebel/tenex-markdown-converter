@@ -27,9 +27,9 @@ resource "google_project_iam_member" "secret-reader" {
 resource "google_pubsub_topic_iam_member" "pubsub-publisher" {
   for_each = local.tenant_envs
 
-  topic   = google_pubsub_topic.mdconversions.name
-  role    = "roles/pubsub.publisher"
-  member  = "serviceAccount:${google_service_account.md-website[each.key].email}"
+  topic  = google_pubsub_topic.mdconversions.name
+  role   = "roles/pubsub.publisher"
+  member = "serviceAccount:${google_service_account.md-website[each.key].email}"
 }
 
 resource "google_storage_bucket_iam_member" "gcs-reader" {
@@ -192,10 +192,10 @@ resource "google_logging_metric" "md-website-500s" {
 resource "google_monitoring_alert_policy" "md-website" {
   for_each = local.tenant_envs
 
-  display_name          = "Cloud Run: mdwebsite-${each.key}"
-  enabled               = true
-  combiner              = "OR"
-  severity              = "WARNING"
+  display_name = "Cloud Run: mdwebsite-${each.key}"
+  enabled      = true
+  combiner     = "OR"
+  severity     = "WARNING"
 
   documentation {
     subject   = "Cloud Run: mdwebsite-${each.key} alert"
