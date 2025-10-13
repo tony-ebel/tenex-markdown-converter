@@ -26,7 +26,8 @@
               const pollResponse = await fetch(listenEndpoint);
       
               if (pollResponse.ok) {
-                  const htmlContent = await pollResponse.html;
+                  const data = await pollResponse.json();
+                  const htmlContent = data.html;
                   outputPre.textContent = htmlContent;
               } else if (pollResponse.status === 404) {
                   // Markdown not ready yet, set a delay and try again
