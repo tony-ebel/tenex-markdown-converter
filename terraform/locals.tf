@@ -10,20 +10,24 @@ locals {
 
   cloud_run_settings = {
     stage = {
-      tag           = "beta"
-      cpu           = "1"
-      mem           = "2Gi"
-      cpu_idle      = true
-      min_instances = 0
-      max_instances = 3
+      tag                    = "beta"
+      cpu                    = "1"
+      mem                    = "2Gi"
+      cpu_idle               = true
+      min_instances          = 0
+      max_instances          = 3
+      max_instances_duration = "1800s"
+      http_error_threshold   = 20
     }
     prod = {
-      tag           = "latest"
-      cpu           = "2"
-      mem           = "4Gi"
-      cpu_idle      = true
-      min_instances = 0
-      max_instances = 5
+      tag                    = "latest"
+      cpu                    = "2"
+      mem                    = "4Gi"
+      cpu_idle               = true
+      min_instances          = 0
+      max_instances          = 5
+      max_instances_duration = "300s"
+      http_error_threshold   = 20
     }
   }
 }

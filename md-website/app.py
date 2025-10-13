@@ -7,6 +7,7 @@ import logging
 
 logging.basicConfig(level=logging.INFO)
 gcs_mount = os.getenv("GCS_MOUNTPOINT")
+secret_sauce = os.getenv("SECRETSAUCE")
 
 
 app = Flask(__name__)
