@@ -4,6 +4,12 @@ variable "project_id" {
   description = "Google Cloud Project Name"
 }
 
+variable "region" {
+  type        = string
+  default     = "us-central1"
+  description = "Default region to create resources in"
+}
+
 variable "environments" {
   type        = list(string)
   default     = ["stage", "prod"]
@@ -26,4 +32,10 @@ variable "run_gcs_mountpoint" {
   type        = string
   default     = "/mnt/bucket"
   description = "Mountpoint of GCS bucket inside each cloud run container"
+}
+
+variable "md-converter-source-dir" {
+  type        = string
+  default     = "../md-converter"
+  description = "Relative source directory for the md-converter code"
 }

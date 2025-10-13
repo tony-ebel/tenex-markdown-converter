@@ -1,5 +1,6 @@
 provider "google" {
   project = var.project_id
+  region  = var.region
 }
 
 terraform {
@@ -8,6 +9,10 @@ terraform {
     google = {
       source  = "hashicorp/google"
       version = "~> 6.30.0"
+    }
+    archive = {
+      source  = "hashicorp/archive"
+      version = "~> 2.7.1"
     }
   }
   backend "gcs" {
