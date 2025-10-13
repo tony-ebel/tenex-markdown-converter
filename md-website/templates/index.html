@@ -12,11 +12,44 @@
     <pre id="html-output">Converted HTML will appear here...</pre>
   
     <script>
+      async function pollForHtml(listenEndpoint, outputPre, startTime) {
+          const TIMEOUT_MS = 120000; // 2 minutes
+          const POLL_INTERVAL_MS = 3000; // Poll every 3 seconds
+      
+          // Check for timeout
+          if (Date.now() - startTime > TIMEOUT_MS) {
+              outputPre.textContent = 'Conversion timed out.';
+              return;
+          }
+      
+          try {
+              const pollResponse = await fetch(listenEndpoint);
+      
+              if (pollResponse.ok) {
+                  const htmlContent = await pollResponse.text();
+                  outputPre.textContent = htmlContent;
+              } else if (pollResponse.status === 404) {
+                  // Markdown not ready yet, set a delay and try again
+                  await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+                  await pollForHtml(listenEndpoint, outputPre, startTime);
+              } else {
+                  // Handle other non-200 errors (e.g., 500 server error)
+                  outputPre.textContent = `ERROR: Failed to retrieve HTML. Status: ${pollResponse.status}`;
+              }
+          } catch (error) {
+              // Handle network errors during polling
+              outputPre.textContent = `A network error occurred during polling: ${error}`;
+          }
+      }
+
+
       async function convertMarkdown() {
         const markdownText = document.getElementById('markdown-input').value;
         const outputPre = document.getElementById('html-output');
   
-        outputPre.textContent = '...Converting...';
+        outputPre.textContent = '...Converting and waiting for html...';
+
+        const startTime = Date.now();
   
         try {
           const response = await fetch('/api/mdconvert', {
@@ -27,13 +60,21 @@
             body: JSON.stringify({ markdown: markdownText })
           });
   
+          if (!response.ok) {
+              outputPre.textContent = `ERROR: Initial conversion request failed with status ${response.status}.`;
+              return;
+          }
+
           const data = await response.json();
   
-          if (data.status === 'success') {
-            outputPre.textContent = data.html_content; 
+          if (data.status === 'success' && data.listen_endpoint) {
+            // Start our recursive polling function
+            await pollForHtml(data.listen_endpoint, outputPre, startTime);
                           
+          } else if (data.status == 'success' && !data.listen_endpoint) {
+            outputPre.textContent = `ERROR: Initial success response missing listen_endpoint.`;
           } else {
-            outputPre.textContent = `ERROR: ${data.error}`;
+            outputPre.textContent = `ERROR: ${data.error || 'Conversions failed.'}`;
           }
   
         } catch (error) {
