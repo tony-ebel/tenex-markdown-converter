@@ -27,7 +27,7 @@ data "archive_file" "md-converter-artifact" {
   type = "zip"
 
   source_dir  = var.md-converter-source-dir
-  output_path = "${var.md-converter-source-dir}/index.zip"
+  output_path = "/tmp/index.zip"
 }
 
 resource "google_storage_bucket_object" "md-converter-artifact" {
