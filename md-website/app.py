@@ -17,6 +17,14 @@ def index():
     return render_template('index.html', title='Home')
 
 
+@app.route('/health', methods=['GET'])
+def health():
+    return jsonify({
+        "status": "success",
+        "secret_sauce": secret_sauce
+    })
+
+
 @app.route('/api/mdconvert', methods=['POST'])
 def md_converter():
     # validate json in request

@@ -66,7 +66,7 @@ resource "google_cloud_run_v2_service" "md-website" {
       image = "${var.gar_image_base}/md-website:${local.cloud_run_settings[each.value.env].tag}"
 
       ports {
-        container_port = 5000
+        container_port = var.md-website-port
       }
 
       resources {
@@ -75,6 +75,26 @@ resource "google_cloud_run_v2_service" "md-website" {
         limits = {
           cpu    = local.cloud_run_settings[each.value.env].cpu
           memory = local.cloud_run_settings[each.value.env].mem
+        }
+      }
+
+      startup_probe {
+        timeout_seconds   = 60
+        period_seconds    = 60
+        failure_threshold = 1
+        tcp_socket {
+          port = var.md-website-port
+        }
+      }
+
+      liveness_probe {
+        initial_delay_seconds = 30
+        timeout_seconds       = 1
+        period_seconds        = 300
+        failure_threshold     = 3
+        http_get {
+          path = "/health"
+          port = var.md-website-port
         }
       }
 

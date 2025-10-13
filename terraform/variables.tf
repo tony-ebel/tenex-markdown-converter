@@ -28,6 +28,12 @@ variable "gar_image_base" {
   description = "Google Aritifact Registry image base"
 }
 
+variable "md-website-port" {
+  type        = number
+  default     = 5000
+  description = "Port for md-website Flask application to bind to"
+}
+
 variable "run_gcs_mountpoint" {
   type        = string
   default     = "/mnt/bucket"
