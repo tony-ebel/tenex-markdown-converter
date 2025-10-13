@@ -1,5 +1,16 @@
-# IAM role
+# IAM Service Account
+resource "google_service_account" "md-converter" {
+  account_id   = "sa-cloudfunction-md-converter"
+  display_name = "SA for Cloud Function md-converter"
+}
 
+resource "google_storage_bucket_iam_member" "md-converter-gcs-reader" {
+  for_each = google_storage_bucket.mdconversions
+
+  bucket = each.value.name
+  role   = "roles/storage.objectCreator"
+  member = "serviceAccount:${google_service_account.md-converter.email}"
+}
 
 # GCS Source Artifact
 resource "google_storage_bucket" "md-converter-artifact" {
@@ -44,11 +55,12 @@ resource "google_cloudfunctions2_function" "md-converter" {
   }
 
   service_config {
-    min_instance_count = 0
-    max_instance_count = 1
-    available_cpu      = "1"
-    available_memory   = "256M"
-    timeout_seconds    = 30
+    min_instance_count    = 0
+    max_instance_count    = 1
+    available_cpu         = "1"
+    available_memory      = "256M"
+    timeout_seconds       = 30
+    service_account_email = google_service_account.md-converter.email
   }
 
   event_trigger {
