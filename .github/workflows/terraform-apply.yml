@@ -1,0 +1,41 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+    
+
+jobs:
+  terraform:
+    name: Terraform Apply
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+      pull-requests: 'write'
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Setup Tofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.6.0"
+
+      - name: Tofu Init
+        id: init
+        run: tofu init
+
+      - name: Tofu Apply
+        id: apply
+        run: tofu apply -no-color -auto-approve
+        continue-on-error: false
