@@ -15,12 +15,12 @@ output "pubsub_topic_prod" {
 
 output "function_sa_stage" {
   description = "Cloud Run Function service account for stage environment"
-  value = google_service_account.md-converter["stage"].email
+  value       = google_service_account.md-converter["stage"].email
 }
 
 output "function_sa_prod" {
   description = "Cloud Run Function service account for prod environment"
-  value = google_service_account.md-converter["prod"].email
+  value       = google_service_account.md-converter["prod"].email
 }
 
 output "run_services_stage" {
