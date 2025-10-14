@@ -1,0 +1,19 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.0
+    hooks:
+      - id: ruff-check
+        args: [ --fix ]
+        files: ^md-website/.*
+      - id: ruff-format
+        files: ^md-website/.*
+  - repo: https://github.com/tofuutils/pre-commit-opentofu
+    rev: v2.2.0
+    hooks:
+      - id: tofu_fmt
+        files: ^terraform\/.+\.tf$
+      - id: tofu_validate
+        files: ^terraform\/.+\.tf$
+      - id: tofu_tflint
+        files: ^terraform\/.+\.tf$
+

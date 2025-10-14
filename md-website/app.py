@@ -12,68 +12,62 @@ secret_sauce = os.getenv("SECRETSAUCE")
 
 app = Flask(__name__)
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    return render_template('index.html', title='Home')
+    return render_template("index.html", title="Home")
 
 
-@app.route('/health', methods=['GET'])
+@app.route("/health", methods=["GET"])
 def health():
-    return jsonify({
-        "status": "success",
-        "secret_sauce": secret_sauce
-    })
+    return jsonify({"status": "success", "secret_sauce": secret_sauce})
 
 
-@app.route('/api/mdconvert', methods=['POST'])
+@app.route("/api/mdconvert", methods=["POST"])
 def md_converter():
     # validate json in request
     if not request.is_json:
         return jsonify({"error": "Missing JSON in request"}), 400
 
     data = request.get_json()
-    markdown = data.get('markdown')
+    markdown = data.get("markdown")
 
     if not markdown:
         return jsonify({"error", "Missing 'markdown' field"}), 400
 
-    
     # submit pubsub message
-    project_id = 'still-tower-474715-c6'
+    project_id = "still-tower-474715-c6"
     topic_id = os.getenv("PUBSUB_TOPIC")
     bucket_name = os.getenv("BUCKETNAME")
 
     publisher = pubsub_v1.PublisherClient()
     topic_path = publisher.topic_path(project_id, topic_id)
 
-    data = markdown.encode('utf-8')
+    data = markdown.encode("utf-8")
 
     try:
-        future = publisher.publish(
-            topic_path, data=data, bucketname=bucket_name
-        )
+        future = publisher.publish(topic_path, data=data, bucketname=bucket_name)
 
         message_id = future.result()
-        logging.info(f'Published message with ID: {message_id}')
+        logging.info(f"Published message with ID: {message_id}")
 
-        return jsonify({
-            "status": "success",
-            "message_id": message_id,
-            "listen_endpoint": f'/api/retrieve/{message_id}.html'
-        })
+        return jsonify(
+            {"status": "success", "message_id": message_id, "listen_endpoint": f"/api/retrieve/{message_id}.html"}
+        )
 
     except exceptions.GoogleAPICallError as e:
-        logging.error(f'Google API error during publish: {e}')
+        logging.error(f"Google API error during publish: {e}")
         return jsonify({"status": "error"})
 
     except Exception as e:
-        logging.error(f'An unexpected error occured during publish: {e}')
+        logging.error(f"An unexpected error occured during publish: {e}")
         return jsonify({"status": "error"})
 
     finally:
         publisher.transport.close()
 
-@app.route('/api/retrieve/<filename>', methods=['GET'])
+
+@app.route("/api/retrieve/<filename>", methods=["GET"])
 def retrieve_html(filename):
     file_path = os.path.join(gcs_mount, filename)
 
@@ -82,13 +76,9 @@ def retrieve_html(filename):
 
     if os.path.exists(file_path) and os.path.isfile(file_path):
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, "r", encoding="utf-8") as f:
                 html = f.read()
-                return jsonify({
-                    "status": "success",
-                    "filename": filename,
-                    "html": html
-                })
+                return jsonify({"status": "success", "filename": filename, "html": html})
 
         except Exception as e:
             return jsonify({"error": f"Could not read file: {str(e)}"}), 500

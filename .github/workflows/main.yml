@@ -1,24 +1,45 @@
-name: Build md-website Image
+name: Main
+
 
 on:
   pull_request:
     branches: [ main ]
-    types: [ opened, closed, synchronize, reopened ]
+    types: [ opened, synchronize, reopened ]
     paths:
       - md-website/
       - .github/workflows/md-website.yml
-  workflow_dispatch:
 
 env:
   IMAGE_CACHE_NAME: us-central1-docker.pkg.dev/still-tower-474715-c6/markdown-converter/md-website:build-cache
 
 jobs:
+  lint-and-format:
+    name: Lint and Format
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: md-website
+
+    steps:
+      - name: Install ruff
+        uses: astral-sh/ruff-action@v3
+        with:
+          version: ">=0.14.0"
+          args: "--version"
+
+      - name: Lint
+        run: ruff check
+
+      - name: Format
+        run: ruff format --check
+      
   build-docker-image:
     name: Build md-website Image
     runs-on: ubuntu-22.04
     permissions:
       contents: read
       id-token: write
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -34,15 +55,16 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to GAR
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: us-central1-docker.pkg.dev
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+          username: _json_key
+          password: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
 
       - name: Docker Build & Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
+          push: false
           context: ./md-website
           cache-from: type=registry,ref=${{ env.IMAGE_CACHE_NAME }}
           cache-to: type=registry,ref=${{ env.IMAGE_CACHE_NAME }}
