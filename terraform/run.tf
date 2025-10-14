@@ -251,30 +251,4 @@ resource "google_monitoring_alert_policy" "md-website" {
       threshold_value = local.cloud_run_settings[each.value.env].max_instances - 1
     }
   }
-
-  conditions {
-    display_name = "Cloud Run: mdwebsite-${each.key} HTTP 500s"
-
-    condition_threshold {
-      filter = <<-EOT
-        resource.type = "cloud_run_revision"
-        AND metric.type = "logging.googleapis.com/user/${google_logging_metric.md-website-500s[each.key].id}"
-      EOT
-
-      aggregations {
-        alignment_period     = "300s"
-        cross_series_reducer = "REDUCE_NONE"
-        per_series_aligner   = "ALIGN_SUM"
-      }
-
-      comparison = "COMPARISON_GT"
-      duration   = "300s"
-
-      trigger {
-        count = 1
-      }
-
-      threshold_value = local.cloud_run_settings[each.value.env].http_error_threshold
-    }
-  }
 }
