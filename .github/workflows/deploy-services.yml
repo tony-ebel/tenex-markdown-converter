@@ -115,7 +115,7 @@ jobs:
             region=$2
             stable_revision=$(gcloud run services describe $service --region $region --format='value(traffic[0].revision)' | sed 's/.*\///')
 
-            gcloud run deploy mdwebsite-$service \
+            gcloud run deploy $service \
               --image ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }} \
               --region us-central1 \
               --no-traffic
