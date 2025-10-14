@@ -9,5 +9,3 @@ Deploys are managed by a github actions [workflow](../.github/workflows/deploy-f
 To deploy to a specified environment:
  - stage: merge into `main` branch
  - prod: tag with a `v-*` format
-
-*Note*: the workflow will only trigger if code has been changed in this directory

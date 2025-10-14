@@ -5,9 +5,7 @@ on:
     branches:
       - main
     tags:
-      - '*'
-    paths:
-      - 'md-converter'
+      - '*v'
 
 jobs:
   set-environment:
