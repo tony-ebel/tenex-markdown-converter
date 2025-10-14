@@ -22,7 +22,7 @@ jobs:
         if [[ $GITHUB_REF == refs/heads/main ]]; then
           echo "deploy-env=stage" >> $GITHUB_OUTPUT
           echo "version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
-        else
+        elif [[ $GITHUB_REF_TYPE == "tag" && $GITHUB_REF_NAME == v* ]]; then 
           echo "deploy-env=prod" >> $GITHUB_OUTPUT
           echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
         fi
@@ -70,4 +70,3 @@ jobs:
           runtime: python312
           labels: |-
             version=${{ needs.set-environment.outputs.version }}
-

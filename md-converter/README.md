@@ -4,14 +4,10 @@ markdown in the payload to html. Then uploads that to a GCS bucket
 specified in the payload.
 
 # Deploying
-To manually deploy run the following
+Deploys are managed by a github actions [workflow](../.github/workflow/deploy-function.yml)
 
-```bash
-gcloud functions deploy md_converter \
-  --runtime python312 \
-  --trigger-topic mdconversions \
-  --entry-point pubsub_trigger \
-  --region us-central1 \
-  --project still-tower-474715-c6 \
-  --source .
-```
+To deploy to a specified environment:
+ - stage: merge into `main` branch
+ - prod: tag with a `v-*` format
+
+*Note*: the workflow will only trigger if code has been changed in this directory
