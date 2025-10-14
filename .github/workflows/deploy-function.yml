@@ -27,7 +27,7 @@ jobs:
           echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
         fi
 
-  get-fuction-name:
+  get-function-name:
     needs: set-environment
     name: Retrive Cloud Function Name
     outputs:

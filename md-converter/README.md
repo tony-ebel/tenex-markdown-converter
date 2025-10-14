@@ -4,7 +4,7 @@ markdown in the payload to html. Then uploads that to a GCS bucket
 specified in the payload.
 
 # Deploying
-Deploys are managed by a github actions [workflow](../.github/workflow/deploy-function.yml)
+Deploys are managed by a github actions [workflow](../.github/workflows/deploy-function.yml)
 
 To deploy to a specified environment:
  - stage: merge into `main` branch
