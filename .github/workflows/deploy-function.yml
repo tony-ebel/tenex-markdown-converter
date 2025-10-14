@@ -37,6 +37,9 @@ jobs:
         working-directory: terraform
 
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -51,7 +54,8 @@ jobs:
       - name: Tofu Init
         run: tofu init
 
-      - id: getname
+      - name: Get Function Name
+        id: getname
         run: |
           function=$(tofu output -raw function_${{ needs.set-environment.outputs.deploy-env }})
           echo "function-name=${function}" >> $GITHUB_OUTPUT
