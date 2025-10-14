@@ -1,0 +1,73 @@
+name: Deploy Cloud Function
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+    paths:
+      - 'md-converter'
+
+jobs:
+  set-environment:
+    name: Set Environment
+    outputs:
+      deploy-env: ${{ steps.setenv.outputs.deploy-env }}
+      version: ${{ steps.setenv.outputs.version }}
+    runs-on: ubuntu-22.04
+    steps:
+    - id: setenv
+      run: |
+        if [[ $GITHUB_REF == refs/heads/main ]]; then
+          echo "deploy-env=stage" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+        else
+          echo "deploy-env=prod" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+        fi
+
+  get-fuction-name:
+    needs: set-environment
+    name: Retrive Cloud Function Name
+    outputs:
+      function-name: ${{ steps.getname.outputs.function-name }}
+    runs-on: ubuntu-22.04
+    steps:
+    - id: getname
+      working-directory: terraform
+      run: |
+        function=$(tofu output -raw function_${{ needs.set-environment.outputs.deploy-env }})
+        echo "function-name=${function}" >> $GITHUB_OUTPUT
+
+  deploy-function:
+    needs: [set-environment, get-function-name]
+    name: Build and Deploy
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ needs.set-environment.outputs.deploy-env }}
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: ${{ needs.set-environment.outputs.deploy-env }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Deploy Cloud Function
+        uses: google-github-actions/deploy-cloud-functions@v4
+        with:
+          name: ${{ needs.get-function-name.outputs.function-name }}
+          source_dir: ./md-converter
+          runtime: python312
+          labels: |-
+            version=${{ needs.set-environment.outputs.version }}
+

@@ -28,3 +28,13 @@ output "run_prod_services" {
     if value.env == "prod"
   ])
 }
+
+output "function_stage" {
+  description = "Cloud Function Service for stage environment"
+  value = google_cloudfunctions2_function.md-converter["stage"].name
+}
+
+output "function_prod" {
+  description = "Cloud Function Service for prod environment"
+  value = google_cloudfunctions2_function.md-converter["prod"].name
+}
