@@ -117,7 +117,7 @@ jobs:
             gcloud run deploy $service \
               --image ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }} \
               --region us-central1 &
-            pids+=(!$)
+            pids+=($!)
           done
 
           for pid in "${pids[@]}"; do
@@ -127,7 +127,7 @@ jobs:
             fi
           done
 
-          if (( failures != 0 )); do
+          if (( failures != 0 )); then
             echo "We had issues with at least one Cloud Run deployment"
             exit 1
-          done
+          fi
