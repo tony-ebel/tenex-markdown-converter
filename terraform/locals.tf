@@ -30,22 +30,4 @@ locals {
       http_error_threshold   = 20
     }
   }
-
-  cloud_function_settings = {
-    stage = {
-      min_instances = 0
-      max_instances = 1
-      cpu           = "1"
-      mem           = "256M"
-      timeout       = 30
-    }
-    prod = {
-      min_instances = 0
-      max_instances = 2
-      cpu           = "2"
-      mem           = "512M"
-      timeout       = 30
-    }
-  }
-
 }
