@@ -26,11 +26,12 @@ jobs:
           echo "version=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
         fi
 
-  get-function-name:
+  get-function:
     needs: set-environment
-    name: Retrive Cloud Function Name
+    name: Retrive Cloud Function Details Managed by Terraform
     outputs:
-      function-name: ${{ steps.getname.outputs.function-name }}
+      sa: ${{ steps.getdetails.outputs.sa }}
+      pubsub: ${{ steps.getdetails.outputs.pubsub }}
     runs-on: ubuntu-22.04
     defaults:
       run:
@@ -54,14 +55,16 @@ jobs:
       - name: Tofu Init
         run: tofu init
 
-      - name: Get Function Name
-        id: getname
+      - name: Get Function Details
+        id: getdetails
         run: |
-          function=$(tofu output -raw function_${{ needs.set-environment.outputs.deploy-env }})
-          echo "function-name=${function}" >> $GITHUB_OUTPUT
+          sa=$(tofu output -raw function_sa_${{ needs.set-environment.outputs.deploy-env }})
+          pubsub=$(tofu output -raw pubsub_topic_${{ needs.set-environment.outputs.deploy-env }})
+          echo "sa=${sa}" >> $GITHUB_OUTPUT
+          echo "pubsub=${pubsub}" >> $GITHUB_OUTPUT
 
   deploy-function:
-    needs: [set-environment, get-function-name]
+    needs: [set-environment, get-function]
     name: Build and Deploy
     runs-on: ubuntu-22.04
     environment:
@@ -86,8 +89,10 @@ jobs:
       - name: Deploy Cloud Function
         uses: google-github-actions/deploy-cloud-functions@v4
         with:
-          name: ${{ needs.get-function-name.outputs.function-name }}
+          name: md-converter-${{ needs.set-environment.outputs.deploy-env }}
           source_dir: ./md-converter
           runtime: python312
+          service_account: ${{ needs.get-function.outputs.sa }}
+          event_trigger_pubsub_topic: ${{ needs.get-function.outputs.pubsub }}
           labels: |-
             version=${{ needs.set-environment.outputs.version }}

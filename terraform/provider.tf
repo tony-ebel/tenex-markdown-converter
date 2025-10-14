@@ -1,6 +1,8 @@
 provider "google" {
   project = var.project_id
   region  = var.region
+
+  add_terraform_attribution_label = false
 }
 
 terraform {
