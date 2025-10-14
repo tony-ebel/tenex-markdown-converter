@@ -39,9 +39,3 @@ variable "run_gcs_mountpoint" {
   default     = "/mnt/bucket"
   description = "Mountpoint of GCS bucket inside each cloud run container"
 }
-
-variable "md-converter-source-dir" {
-  type        = string
-  default     = "../md-converter"
-  description = "Relative source directory for the md-converter code"
-}
