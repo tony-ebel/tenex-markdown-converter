@@ -92,6 +92,7 @@ jobs:
           name: md-converter-${{ needs.set-environment.outputs.deploy-env }}
           source_dir: ./md-converter
           runtime: python312
+          entry_point: pubsub_trigger
           service_account: ${{ needs.get-function.outputs.sa }}
           event_trigger_pubsub_topic: ${{ needs.get-function.outputs.pubsub }}
           labels: |-
