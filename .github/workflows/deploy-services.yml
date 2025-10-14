@@ -90,8 +90,8 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: us-central1-docker.pkg.dev
-          username: oauth2accesstoken
-          password: ${{ steps.auth.outputs.access_token }}
+          username: _json_key
+          password: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
 
       - name: Docker Build & Push
         uses: docker/build-push-action@v6
