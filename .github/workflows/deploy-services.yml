@@ -1,0 +1,126 @@
+name: Deploy Cloud Run Services
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+env:
+  IMAGE_NAME: us-central1-docker.pkg.dev/still-tower-474715-c6/markdown-converter/md-website
+
+jobs:
+  set-environment:
+    name: Set Environment
+    outputs:
+      deploy-env: ${{ steps.setenv.outputs.deploy-env }}
+    runs-on: ubuntu-22.04
+
+    steps:
+    - id: setenv
+      run: |
+        if [[ $GITHUB_REF == refs/heads/main ]]; then
+          echo "deploy-env=stage" >> $GITHUB_OUTPUT
+        elif [[ $GITHUB_REF_TYPE == "tag" && $GITHUB_REF_NAME == v* ]]; then 
+          echo "deploy-env=prod" >> $GITHUB_OUTPUT
+        fi
+
+  get-services:
+    needs: set-environment
+    name: Retrive Cloud Run Details Managed by Terraform
+    outputs:
+      services: ${{ steps.getdetails.outputs.services }}
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Setup Tofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.6.0"
+
+      - name: Tofu Init
+        run: tofu init
+
+      - name: Get Function Details
+        id: getdetails
+        run: |
+          services=$(tofu output -raw run_services_${{ needs.set-environment.outputs.deploy-env }})
+          echo "services=${services}" >> $GITHUB_OUTPUT
+
+  deploy-function:
+    needs: [set-environment, get-services]
+    name: Build and Deploy
+    runs-on: ubuntu-22.04
+    environment:
+      name: ${{ needs.set-environment.outputs.deploy-env }}
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: ${{ needs.set-environment.outputs.deploy-env }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: md-website
+          push: true
+          tags: ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Deploy to Cloud Run
+        run: |
+          # read in services into bash array
+          IFS=',' read -r -a run_services <<< ${{ needs.get-services.outputs.services }}
+
+          # deploy to each service in parallel in background
+          pids=()
+          failures=0
+          for service in "${run_services[@]}"; do
+            gcloud run deploy $service \
+              --image ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }} \
+              --region us-central1 &
+            pids+=(!$)
+          done
+
+          for pid in "${pids[@]}"; do
+            wait "$pid"
+            if [[ $? -ne 0 ]]; then
+              ((failures+=1))
+            fi
+          done
+
+          if (( failures != 0 )); do
+            echo "We had issues with at least one Cloud Run deployment"
+            exit 1
+          done
