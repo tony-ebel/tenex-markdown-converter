@@ -110,13 +110,36 @@ jobs:
           # read in services into bash array
           IFS=',' read -r -a run_services <<< ${{ needs.get-services.outputs.services }}
 
-          # deploy to each service in parallel in background
-          pids=()
-          failures=0
-          for service in "${run_services[@]}"; do
+          canary_deploy() {
+            service=$1
+            region=$2
+            stable_revision=$(gcloud run services describe $service --region $region --format='value(traffic[0].revision)' | sed 's/.*\///')
+
             gcloud run deploy mdwebsite-$service \
               --image ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }} \
-              --region us-central1 &
+              --region us-central1 \
+              --no-traffic
+
+            gcloud run services update-traffic $service \
+              --to-latest=10
+            sleep 10
+
+            gcloud run services update-traffic $service \
+              --to-latest=50
+              --to-revisions=$stable_revision=50
+            sleep 10
+
+            gcloud run services update-traffic $service \
+              --to-latest=100
+          }
+
+          # deploy to each service in parallel in background
+          region=us-central1
+          pids=()
+          failures=0
+
+          for service in "${run_services[@]}"; do
+            canary_deploy $service $region &
             pids+=($!)
           done
 
