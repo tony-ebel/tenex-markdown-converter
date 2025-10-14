@@ -6,8 +6,8 @@ on:
     branches: [ main ]
     types: [ opened, synchronize, reopened ]
     paths:
-      - md-website/
-      - .github/workflows/md-website.yml
+      - md-website/**
+      - .github/workflows/main.yml
 
 env:
   IMAGE_CACHE_NAME: us-central1-docker.pkg.dev/still-tower-474715-c6/markdown-converter/md-website:build-cache
