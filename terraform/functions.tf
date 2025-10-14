@@ -27,20 +27,11 @@ resource "google_storage_bucket" "md-converter-artifact" {
   public_access_prevention    = "enforced"
 }
 
-data "archive_file" "md-converter-artifact" {
-  for_each = var.environments
-
-  type        = "zip"
-  source_dir  = var.md-converter-source-dir
-  output_path = "/tmp/index.zip"
-}
-
-resource "google_storage_bucket_object" "md-converter-artifact" {
+data "google_storage_bucket_object" "md-converter-artifact" {
   for_each = var.environments
 
   name   = "index.zip"
   bucket = google_storage_bucket.md-converter-artifact[each.key].name
-  source = data.archive_file.md-converter-artifact[each.key].output_path
 }
 
 # Cloud Function
@@ -57,7 +48,7 @@ resource "google_cloudfunctions2_function" "md-converter" {
     source {
       storage_source {
         bucket = google_storage_bucket.md-converter-artifact[each.key].name
-        object = google_storage_bucket_object.md-converter-artifact[each.key].name
+        object = data.google_storage_bucket_object.md-converter-artifact[each.key].name
       }
     }
 
