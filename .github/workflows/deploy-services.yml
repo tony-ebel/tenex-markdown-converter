@@ -100,7 +100,7 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
           cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
-          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }}
+          cache-to: type=inline
 
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
