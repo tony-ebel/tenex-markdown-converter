@@ -1,20 +1,24 @@
 # IAM Service Account
 resource "google_service_account" "md-converter" {
-  account_id   = "sa-cloudfunction-md-converter"
-  display_name = "SA for Cloud Function md-converter"
+  for_each = var.environments
+
+  account_id   = "sa-cf-md-converter-${each.key}"
+  display_name = "SA for Cloud Function md-converter ${each.key}"
 }
 
 resource "google_storage_bucket_iam_member" "md-converter-gcs-reader" {
-  for_each = google_storage_bucket.mdconversions
+  for_each = local.tenant_envs
 
-  bucket = each.value.name
+  bucket = google_storage_bucket.mdconversions[each.key].name
   role   = "roles/storage.objectCreator"
-  member = "serviceAccount:${google_service_account.md-converter.email}"
+  member = "serviceAccount:${google_service_account.md-converter[each.value.env].email}"
 }
 
 # GCS Source Artifact
 resource "google_storage_bucket" "md-converter-artifact" {
-  name          = "mdconversions-source-artifact"
+  for_each = var.environments
+
+  name          = "mdconversions-${each.key}-source-artifact"
   location      = "US"
   force_destroy = true
 
@@ -24,21 +28,26 @@ resource "google_storage_bucket" "md-converter-artifact" {
 }
 
 data "archive_file" "md-converter-artifact" {
-  type = "zip"
+  for_each = var.environments
 
+  type        = "zip"
   source_dir  = var.md-converter-source-dir
   output_path = "/tmp/index.zip"
 }
 
 resource "google_storage_bucket_object" "md-converter-artifact" {
+  for_each = var.environments
+
   name   = "index.zip"
-  bucket = google_storage_bucket.md-converter-artifact.name
-  source = data.archive_file.md-converter-artifact.output_path
+  bucket = google_storage_bucket.md-converter-artifact[each.key].name
+  source = data.archive_file.md-converter-artifact[each.key].output_path
 }
 
 # Cloud Function
 resource "google_cloudfunctions2_function" "md-converter" {
-  name        = "md-converter"
+  for_each = var.environments
+
+  name        = "md-converter-${each.key}"
   location    = var.region
   description = "Converts markdown in pubsub messages to html and uploads to GCS"
 
@@ -47,26 +56,26 @@ resource "google_cloudfunctions2_function" "md-converter" {
     entry_point = "pubsub_trigger"
     source {
       storage_source {
-        bucket = google_storage_bucket.md-converter-artifact.name
-        object = google_storage_bucket_object.md-converter-artifact.name
+        bucket = google_storage_bucket.md-converter-artifact[each.key].name
+        object = google_storage_bucket_object.md-converter-artifact[each.key].name
       }
     }
 
   }
 
   service_config {
-    min_instance_count    = 0
-    max_instance_count    = 1
-    available_cpu         = "1"
-    available_memory      = "256M"
-    timeout_seconds       = 30
-    service_account_email = google_service_account.md-converter.email
+    min_instance_count    = local.cloud_function_settings[each.key].min_instances
+    max_instance_count    = local.cloud_function_settings[each.key].max_instances
+    available_cpu         = local.cloud_function_settings[each.key].cpu
+    available_memory      = local.cloud_function_settings[each.key].mem
+    timeout_seconds       = local.cloud_function_settings[each.key].timeout
+    service_account_email = google_service_account.md-converter[each.key].email
   }
 
   event_trigger {
     trigger_region = var.region
     event_type     = "google.cloud.pubsub.topic.v1.messagePublished"
-    pubsub_topic   = google_pubsub_topic.mdconversions.id
+    pubsub_topic   = google_pubsub_topic.mdconversions[each.key].id
     retry_policy   = "RETRY_POLICY_RETRY"
   }
 }

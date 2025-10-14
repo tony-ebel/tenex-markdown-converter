@@ -11,13 +11,13 @@ variable "region" {
 }
 
 variable "environments" {
-  type        = list(string)
+  type        = set(string)
   default     = ["stage", "prod"]
   description = "Environments for the project"
 }
 
 variable "tenants" {
-  type        = list(string)
+  type        = set(string)
   default     = ["company1", "company2"]
   description = "Customer environments to setup"
 }

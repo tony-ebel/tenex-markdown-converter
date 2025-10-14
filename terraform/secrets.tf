@@ -1,5 +1,5 @@
 resource "google_secret_manager_secret" "secret-sauce" {
-  for_each = toset(var.tenants)
+  for_each = var.tenants
 
   secret_id = "${each.key}-secret-sauce"
 

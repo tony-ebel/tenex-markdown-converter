@@ -27,7 +27,7 @@ resource "google_project_iam_member" "secret-reader" {
 resource "google_pubsub_topic_iam_member" "pubsub-publisher" {
   for_each = local.tenant_envs
 
-  topic  = google_pubsub_topic.mdconversions.name
+  topic  = google_pubsub_topic.mdconversions[each.value.env].name
   role   = "roles/pubsub.publisher"
   member = "serviceAccount:${google_service_account.md-website[each.key].email}"
 }
@@ -111,6 +111,11 @@ resource "google_cloud_run_v2_service" "md-website" {
       env {
         name  = "BUCKETNAME"
         value = google_storage_bucket.mdconversions[each.key].name
+      }
+
+      env {
+        name  = "PUBSUB_TOPIC"
+        value = google_pubsub_topic.mdconversions[each.value.env].name
       }
 
       env {

@@ -3,9 +3,14 @@ output "run_gcs_mountpoint" {
   value       = var.run_gcs_mountpoint
 }
 
-output "pubsub_topic" {
-  description = "PubSub topic name"
-  value       = google_pubsub_topic.mdconversions.name
+output "pubsub_stage_topic" {
+  description = "PubSub topic name stage"
+  value       = google_pubsub_topic.mdconversions["stage"].name
+}
+
+output "pubsub_prod_topic" {
+  description = "PubSub topic name prod"
+  value       = google_pubsub_topic.mdconversions["prod"].name
 }
 
 output "run_stage_services" {

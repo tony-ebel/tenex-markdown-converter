@@ -40,7 +40,7 @@ def md_converter():
     
     # submit pubsub message
     project_id = 'still-tower-474715-c6'
-    topic_id = 'mdconversions'
+    topic_id = os.getenv("PUBSUB_TOPIC")
     bucket_name = os.getenv("BUCKETNAME")
 
     publisher = pubsub_v1.PublisherClient()
