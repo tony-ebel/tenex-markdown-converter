@@ -121,16 +121,15 @@ jobs:
               --no-traffic
 
             gcloud run services update-traffic $service \
-              --to-latest=10
+              --to-revisions=LATEST=10,$stable_revision=90
             sleep 10
 
             gcloud run services update-traffic $service \
-              --to-latest=50
-              --to-revisions=$stable_revision=50
+              --to-revisions=LATEST=50,$stable_revision=50
             sleep 10
 
             gcloud run services update-traffic $service \
-              --to-latest=100
+              --to-latest
           }
 
           # deploy to each service in parallel in background
