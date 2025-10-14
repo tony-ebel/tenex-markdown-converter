@@ -114,7 +114,7 @@ jobs:
           pids=()
           failures=0
           for service in "${run_services[@]}"; do
-            gcloud run deploy $service \
+            gcloud run deploy mdwebsite-$service \
               --image ${{ env.IMAGE_NAME }}:${{ vars.IMAGE_TAG }} \
               --region us-central1 &
             pids+=($!)
