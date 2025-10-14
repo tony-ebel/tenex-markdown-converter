@@ -14,6 +14,7 @@ jobs:
       deploy-env: ${{ steps.setenv.outputs.deploy-env }}
       version: ${{ steps.setenv.outputs.version }}
     runs-on: ubuntu-22.04
+
     steps:
     - id: setenv
       run: |
@@ -31,12 +32,29 @@ jobs:
     outputs:
       function-name: ${{ steps.getname.outputs.function-name }}
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: terraform
+
     steps:
-    - id: getname
-      working-directory: terraform
-      run: |
-        function=$(tofu output -raw function_${{ needs.set-environment.outputs.deploy-env }})
-        echo "function-name=${function}" >> $GITHUB_OUTPUT
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_ACCOUNT_JSON }}
+          token_format: access_token
+
+      - name: Setup Tofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: "1.6.0"
+
+      - name: Tofu Init
+        run: tofu init
+
+      - id: getname
+        run: |
+          function=$(tofu output -raw function_${{ needs.set-environment.outputs.deploy-env }})
+          echo "function-name=${function}" >> $GITHUB_OUTPUT
 
   deploy-function:
     needs: [set-environment, get-function-name]
@@ -50,6 +68,7 @@ jobs:
     concurrency:
       group: ${{ needs.set-environment.outputs.deploy-env }}
       cancel-in-progress: true
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
