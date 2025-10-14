@@ -139,7 +139,7 @@ jobs:
           failures=0
 
           for service in "${run_services[@]}"; do
-            canary_deploy $service $region &
+            canary_deploy mdwebsite-$service $region &
             pids+=($!)
           done
 
