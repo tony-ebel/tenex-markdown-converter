@@ -70,7 +70,7 @@ jobs:
       contents: read
       id-token: write
     concurrency:
-      group: ${{ needs.set-environment.outputs.deploy-env }}
+      group: run-${{ needs.set-environment.outputs.deploy-env }}
       cancel-in-progress: true
 
     steps:
@@ -89,7 +89,7 @@ jobs:
       - name: Login to GAR
         uses: docker/login-action@v3
         with:
-          registry: us-central1-docker.pkg.dev/
+          registry: us-central1-docker.pkg.dev
           username: oauth2accesstoken
           password: ${{ steps.auth.outputs.access_token }}
 

@@ -70,7 +70,7 @@ jobs:
       contents: read
       id-token: write
     concurrency:
-      group: ${{ needs.set-environment.outputs.deploy-env }}
+      group: function-${{ needs.set-environment.outputs.deploy-env }}
       cancel-in-progress: true
 
     steps:
