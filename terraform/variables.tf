@@ -18,7 +18,7 @@ variable "environments" {
 
 variable "tenants" {
   type        = set(string)
-  default     = ["company1", "company2"]
+  default     = ["company1", "company2", "company3"]
   description = "Customer environments to setup"
 }
 
