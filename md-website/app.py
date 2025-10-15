@@ -6,6 +6,7 @@ import logging
 
 
 logging.basicConfig(level=logging.INFO)
+environment = os.getenv("ENVIRONMENT")
 gcs_mount = os.getenv("GCS_MOUNTPOINT")
 secret_sauce = os.getenv("SECRETSAUCE")
 
@@ -20,7 +21,7 @@ def index():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "success", "secret_sauce": secret_sauce})
+    return jsonify({"status": "success", "environment": environment, "secret_sauce": secret_sauce})
 
 
 @app.route("/api/mdconvert", methods=["POST"])
