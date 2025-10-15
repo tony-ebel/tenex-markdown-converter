@@ -21,14 +21,18 @@ It also handles API requests from the client for conversions of markdown, as wel
 as returns the converted html back to the client.
 
 #### CI
-There is a CI Github Actions Workflow [here](.github/workflows/main.yml) that
-will run whenever a PR is opened against `main`. The workflow will build the
-docker container as well as run linting and formatting with `ruff`. These jobs
-will need to pass before PRs are allowed to merge into `main`.
+There is a CI Github Actions Workflow [here](.github/workflows/main.yml) that will run whenever a PR is
+opened against `main`. The workflow will build the docker container as well as
+run linting and formatting with `ruff`. These jobs will need to pass before PRs
+are allowed to merge into `main`.
 
-The deployments for the Cloud Run Services are handled by a Github Action [here](.github/workdflows/deploy-services.yml)
 
 #### Deployments
+The deployments for the Cloud Run Services are handled by a Github Action [here](.github/workdflows/deploy-services.yml).
+Our deploy step uses a [Canary Deployment](https://cloud.google.com/deploy/docs/deployment-strategies/canary) stratagy to rollout a Cloud Run Revision
+over time. In the future we should break out that step into a separate Github Action
+and have the step call `uses:` for maintainability.
+
 - stage: merges into `main` branch
 - prod: semver tags created
 
